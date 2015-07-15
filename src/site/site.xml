@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Resolver Maven Plugin" xmlns="http://maven.apache.org/DECORATION/1.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
+    <bannerLeft>
+        <name>Resolver Plugin</name>
+        <href>index.html</href>
+    </bannerLeft>
+
+    <skin>
+        <groupId>org.apache.maven.skins</groupId>
+        <artifactId>maven-fluido-skin</artifactId>
+        <version>1.4</version>
+    </skin>
+    <custom>
+        <fluidoSkin>
+            <topBarEnabled>false</topBarEnabled>
+            <sideBarEnabled>true</sideBarEnabled>
+
+            <gitHub>
+                <projectId>teetrinkers/resolver-maven-plugin</projectId>
+                <ribbonOrientation>right</ribbonOrientation>
+                <ribbonColor>black</ribbonColor>
+            </gitHub>
+        </fluidoSkin>
+    </custom>
+
+    <body>
+        <head>
+            <!-- because the structure is not flat we must use absolute urls -->
+            <link rel="stylesheet" href="site.css" type="text/css"/>
+        </head>
+
+        <menu name="Resolver Plugin">
+            <item name="About" href="index.html"/>
+            <item name="Goals" href="plugin-info.html"/>
+        </menu>
+
+        <menu ref="reports"/>
+    </body>
+</project>
