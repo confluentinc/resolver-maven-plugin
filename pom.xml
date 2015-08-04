@@ -4,7 +4,7 @@
 
     <groupId>com.subshell.maven</groupId>
     <artifactId>resolver-maven-plugin</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>Resolver Maven Plugin</name>
 
@@ -63,7 +63,7 @@
         <url>http://github.com/teetrinkers/resolver-maven-plugin</url>
         <connection>scm:git:git://github.com/teetrinkers/resolver-maven-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/teetrinkers/resolver-maven-plugin.git</developerConnection>
-        <tag>resolver-maven-plugin-1.0.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <dependencies>
