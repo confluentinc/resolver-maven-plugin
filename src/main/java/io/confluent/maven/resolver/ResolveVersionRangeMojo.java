@@ -128,14 +128,6 @@ public class ResolveVersionRangeMojo extends AbstractMojo {
 					throw new MojoFailureException("No matching version found for constraint: '" + constraintText + "'.");
 				}
 
-				if (highestCEVersion == null) {
-					throw new MojoFailureException("No matching CE version found for constraint: '" + constraintText + "'.");
-				}
-
-				if (highestCCSVersion == null) {
-					throw new MojoFailureException("No matching CCS version found for constraint: '" + constraintText + "'.");
-				}
-
 				getLog().info("Highest version: " + highestVersion);
 
 				// Print directly to console.
