@@ -1,4 +1,4 @@
-package com.subshell.maven.resolver;
+package io.confluent.maven.resolver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +87,9 @@ public class ResolveVersionRangeMojo extends AbstractMojo {
 	@Component
 	private RepositorySystem repoSystem;
 
+	@Parameter(property = "resolve-range.skip", defaultValue = "true")
+	private boolean skip;
+
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true)
 	private RepositorySystemSession repoSession;
 
@@ -98,46 +101,57 @@ public class ResolveVersionRangeMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		VersionRangeRequest request = new VersionRangeRequest();
-		request.setRepositories(remoteRepositories);
-		DefaultArtifact artifact = new DefaultArtifact(groupId, artifactId, null, version);
-		request.setArtifact(artifact);
+		if(!skip) {
+			VersionRangeRequest request = new VersionRangeRequest();
+			request.setRepositories(remoteRepositories);
+			DefaultArtifact artifact = new DefaultArtifact(groupId, artifactId, null, version);
+			request.setArtifact(artifact);
 
-		String constraintText = artifact.toString() + ", " + (includeSnapshots ? "including" : "excluding") +
-			" snapshots";
-		getLog().info("Resolving range for " + constraintText);
+			String constraintText = artifact.toString() + ", " + (includeSnapshots ? "including" : "excluding") +
+				" snapshots";
+			getLog().info("Resolving range for " + constraintText);
 
-		try {
-			VersionRangeResult result = repoSystem.resolveVersionRange(repoSession, request);
+			try {
+				VersionRangeResult result = repoSystem.resolveVersionRange(repoSession, request);
 
-			// Workaround for https://issues.apache.org/jira/browse/MNG-3092
-			if (!includeSnapshots) {
-				result.setVersions(removeSnapshots(result.getVersions()));
+				// Workaround for https://issues.apache.org/jira/browse/MNG-3092
+				if (!includeSnapshots) {
+					result.setVersions(removeSnapshots(result.getVersions()));
+				}
+
+				getLog().debug("Constraint: " + result.getVersionConstraint());
+				getLog().info("Versions in range: " + result.getVersions());
+
+				Version highestVersion = result.getHighestVersion();
+
+				if (highestVersion == null) {
+					throw new MojoFailureException("No matching version found for constraint: '" + constraintText + "'.");
+				}
+
+				if (highestCEVersion == null) {
+					throw new MojoFailureException("No matching CE version found for constraint: '" + constraintText + "'.");
+				}
+
+				if (highestCCSVersion == null) {
+					throw new MojoFailureException("No matching CCS version found for constraint: '" + constraintText + "'.");
+				}
+
+				getLog().info("Highest version: " + highestVersion);
+
+				// Print directly to console.
+				if (print) {
+					System.out.println(highestVersion);
+				}
+
+				// Set property.
+				if (StringUtils.isNotEmpty(property) && project != null) {
+					getLog().info("Setting property " + property + "=" + highestVersion);
+					project.getProperties().put(property, highestVersion.toString());
+				}
+
+			} catch (VersionRangeResolutionException e) {
+				throw new MojoExecutionException("", e);
 			}
-
-			getLog().debug("Constraint: " + result.getVersionConstraint());
-			getLog().info("Versions in range: " + result.getVersions());
-
-			Version highestVersion = result.getHighestVersion();
-
-			if (highestVersion == null) {
-				throw new MojoFailureException("No matching version found for constraint: '" + constraintText + "'.");
-			}
-
-			getLog().info("Highest version: " + highestVersion);
-
-			// Print directly to console.
-			if (print) {
-				System.out.println(highestVersion);
-			}
-
-			// Set property.
-			if (StringUtils.isNotEmpty(property) && project != null) {
-				getLog().info("Setting property " + property + "=" + highestVersion);
-				project.getProperties().put(property, highestVersion.toString());
-			}
-		} catch (VersionRangeResolutionException e) {
-			throw new MojoExecutionException("", e);
 		}
 	}
 

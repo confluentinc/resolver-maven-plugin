@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.subshell.maven</groupId>
+    <groupId>io.confluent</groupId>
     <artifactId>resolver-maven-plugin</artifactId>
     <version>1.0.2-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
@@ -22,16 +22,6 @@
         </license>
     </licenses>
 
-    <developers>
-        <developer>
-            <name>Jens Theeß</name>
-            <email>theess@subshell.com</email>
-            <url>https://github.com/teetrinkers</url>
-            <organization>Subshell GmbH</organization>
-            <organizationUrl>http://www.subshell.com</organizationUrl>
-        </developer>
-    </developers>
-
     <prerequisites>
         <maven>${mavenVersion}</maven>
     </prerequisites>
@@ -43,26 +33,10 @@
         <github.global.server>github</github.global.server>
     </properties>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
-    <issueManagement>
-        <url>https://github.com/teetrinkers/resolver-maven-plugin/issues</url>
-        <system>GitHub</system>
-    </issueManagement>
-
     <scm>
-        <url>http://github.com/teetrinkers/resolver-maven-plugin</url>
-        <connection>scm:git:git://github.com/teetrinkers/resolver-maven-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/teetrinkers/resolver-maven-plugin.git</developerConnection>
+        <url>http://github.com/confluentinc/resolver-maven-plugin</url>
+        <connection>scm:git:git://github.com/confluentinc/resolver-maven-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/confluentinc/resolver-maven-plugin.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
@@ -96,6 +70,12 @@
             <artifactId>maven-plugin-annotations</artifactId>
             <version>3.4</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
