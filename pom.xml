@@ -109,6 +109,7 @@
                 </executions>
                 <configuration>
                     <!-- avoiding javadoc warnings caused by Mojo annotations -->
+                    <detectJavaApiLink>false</detectJavaApiLink>
                     <tagletArtifacts>
                         <tagletArtifact>
                             <groupId>org.apache.maven.plugin-tools</groupId>
