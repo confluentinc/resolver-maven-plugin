@@ -2,4 +2,5 @@
 
 common {
     slackChannel = '#tools-oncall'
+    downStreamValidate = false
 }
