@@ -4,7 +4,7 @@
 
     <groupId>io.confluent</groupId>
     <artifactId>resolver-maven-plugin</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>Resolver Maven Plugin</name>
 
@@ -12,7 +12,7 @@
         A Maven plugin for resolving a version range of an artifact to the highest matching version.
     </description>
 
-    <url>https://github.com/teetrinkers/resolver-maven-plugin</url>
+    <url>https://github.com/confluentinc/resolver-maven-plugin</url>
 
     <licenses>
         <license>
@@ -21,10 +21,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
-    <prerequisites>
-        <maven>${mavenVersion}</maven>
-    </prerequisites>
 
     <properties>
         <mavenVersion>3.2.5</mavenVersion>

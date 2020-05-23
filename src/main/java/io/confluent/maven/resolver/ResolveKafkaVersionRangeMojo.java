@@ -12,7 +12,6 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -46,47 +45,65 @@ import org.eclipse.aether.version.Version;
  */
 @Mojo(name = "resolve-kafka-range", defaultPhase = LifecyclePhase.VALIDATE, threadSafe = true, requiresProject = false)
 public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
-	private static final String SNAPSHOT = "SNAPSHOT";
-	private static final String CE = "ce-kafka";
-	private static final String CEVersionString = "-ce";
-	private static final String CCS = "ccs-kafka";
-	private static final String CCSVersionString = "-ccs";
 	private static final Pattern SNAPSHOT_TIMESTAMP = Pattern.compile("^(.*-)?([0-9]{8}\\.[0-9]{6}-[0-9]+)$");
-	private static final String CEKAFKAVERSION = "ce.kafka.version";
-	private static final String CCSKAFKAVERSION = "kafka.version";
+	private static final String CE_KAFKA_VERSION = "ce.kafka.version";
+	private static final String CCS_KAFKA_VERSION = "kafka.version";
+
+	enum Strings {
+		CE("ce-kafka"), CCS("ccs-kafka"), SNAPSHOT("SNAPSHOT"), CE_QUALIFIER("-ce"), CCS_QUALIFIER("-ccs");
+
+		private final String text;
+
+		/**
+		 * @param text
+		 */
+		Strings(final String text) {
+			this.text = text;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see java.lang.Enum#toString()
+		 */
+		@Override
+		public String toString() {
+			return text;
+		}
+	}
 
 	/**
 	 * The group id of the artifact to resolve.
 	 */
-	@Parameter(property = "resolve.groupId", required = true)
+	@Parameter(property = "groupId", required = true)
 	private String groupId;
 
 	/**
 	 * The artifact id of the artifact to resolve.
 	 */
-	@Parameter(property = "resolve.artifactId", required = true)
+	@Parameter(property = "artifactId", required = true)
 	private String artifactId;
 
 	/**
 	 * The version range of the artifact to resolve.
 	 */
-	@Parameter(property = "resolve.versionRange", required = true)
+	@Parameter(property = "versionRange", required = true)
 	private String version;
 
 	/**
 	 * If <code>true</code>, the highest matching version is printed directly to the
 	 * console. This can be used with {@code mvn -q}.
 	 */
-	@Parameter(property = "resolve.printCE")
+	@Parameter(property = "printCE")
 	private boolean printCE;
 
-	@Parameter(property = "resolve.printCCS")
+	@Parameter(property = "printCCS")
 	private boolean printCCS;
 
 	/**
 	 * Set to <code>true</code> to include snapshot versions in the resolution.
 	 */
-	@Parameter(property = "resolve.includeSnapshots", defaultValue = "false")
+	@Parameter(property = "includeSnapshots", defaultValue = "false")
 	private boolean includeSnapshots;
 
 	/**
@@ -120,11 +137,11 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 		try {
 			VersionRangeResult CEResult = repoSystem.resolveVersionRange(repoSession, request);
 			VersionRangeResult CCSResult = repoSystem.resolveVersionRange(repoSession, request);
-			Version highestCEVersion = fetchHighestKafkaVersion(CE, CEResult, constraintText);
-			Version highestCCSVersion = fetchHighestKafkaVersion(CCS, CCSResult, constraintText);
+			Version highestCEVersion = fetchHighestKafkaVersion(Strings.CE.toString(), CEResult, constraintText);
+			Version highestCCSVersion = fetchHighestKafkaVersion(Strings.CCS.toString(), CCSResult, constraintText);
 
-			getLog().info("Highest " + CE + " version: " + highestCEVersion);
-			getLog().info("Highest " + CCS + " version: " + highestCCSVersion);
+			getLog().info("Highest " + Strings.CE.toString() + " version: " + highestCEVersion);
+			getLog().info("Highest " + Strings.CCS.toString() + " version: " + highestCCSVersion);
 
 			if (printCE) {
 				System.out.println(highestCEVersion);
@@ -135,15 +152,16 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 			}
 
 			// Set CE property.
-			if (StringUtils.isNotEmpty(CEKAFKAVERSION) && project != null) {
-				getLog().info("Setting " + CEKAFKAVERSION + " property " + CEKAFKAVERSION + "=" + highestCEVersion);
-				project.getProperties().put(CEKAFKAVERSION, highestCEVersion.toString());
+			if (project != null) {
+				getLog().info("Setting " + CE_KAFKA_VERSION + " property " + CE_KAFKA_VERSION + "=" + highestCEVersion);
+				project.getProperties().put(CE_KAFKA_VERSION, highestCEVersion.toString());
 			}
 
 			// Set CCS property.
-			if (StringUtils.isNotEmpty(CCSKAFKAVERSION) && project != null) {
-				getLog().info("Setting " + CCSKAFKAVERSION + " property " + CCSKAFKAVERSION + "=" + highestCCSVersion);
-				project.getProperties().put(CCSKAFKAVERSION, highestCCSVersion.toString());
+			if (project != null) {
+				getLog().info(
+						"Setting " + CCS_KAFKA_VERSION + " property " + CCS_KAFKA_VERSION + "=" + highestCCSVersion);
+				project.getProperties().put(CCS_KAFKA_VERSION, highestCCSVersion.toString());
 			}
 		} catch (VersionRangeResolutionException e) {
 			throw new MojoExecutionException("", e);
@@ -159,13 +177,13 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 			if (!includeSnapshots) {
 				result.setVersions(removeSnapshots(result.getVersions()));
 			}
-			if (kafkaType.equals(CE)) {
+			if (kafkaType.equals(Strings.CE.toString())) {
 				result.setVersions(includeCE(result.getVersions()));
 				// if ce-kafka can not be fetched
 				if (result.getVersions().isEmpty()) {
-					getLog().info(CE + "can not be fetched");
+					getLog().info(Strings.CE.toString() + " can not be fetched");
 				}
-			} else if (kafkaType.equals(CCS)) {
+			} else if (kafkaType.equals(Strings.CCS.toString())) {
 				result.setVersions(includeCCS(result.getVersions()));
 			} else {
 				throw new MojoFailureException("kafka type " + kafkaType + "wrong or not supported");
@@ -226,14 +244,14 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 	 * Copied from org.eclipse.aether.artifact.AbstractArtifact.isSnapshot(String).
 	 */
 	private static boolean isSnapshot(String version) {
-		return version.endsWith(SNAPSHOT) || SNAPSHOT_TIMESTAMP.matcher(version).matches();
+		return version.endsWith(Strings.SNAPSHOT.toString()) || SNAPSHOT_TIMESTAMP.matcher(version).matches();
 	}
 
 	private static boolean isCCS(String version) {
-		return version.endsWith(CCSVersionString);
+		return version.endsWith(Strings.CCS_QUALIFIER.toString());
 	}
 
 	private static boolean isCE(String version) {
-		return version.endsWith(CEVersionString);
+		return version.endsWith(Strings.CCS_QUALIFIER.toString());
 	}
 }
