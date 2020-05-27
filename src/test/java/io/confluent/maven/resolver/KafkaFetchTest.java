@@ -14,19 +14,19 @@ public class KafkaFetchTest {
     private GenericVersionScheme genericVersionScheme = new GenericVersionScheme();
     private ResolveKafkaVersionRangeMojo resolve = new ResolveKafkaVersionRangeMojo();
     
-    private static final String ONECCS = "6.0.1-1-ccs";
-    private static final String TWELVECE = "6.0.1-12-ce";
+    private static final String ONE_CCS = "6.0.1-1-ccs";
+    private static final String TWELVE_CE = "6.0.1-12-ce";
 
     private final VersionRangeRequest request = new VersionRangeRequest();
 
     @Test
     public void testCECCSkafka() throws Exception {
         final VersionRangeResult Test = new VersionRangeResult(request);
-        Version VONECCS = genericVersionScheme.parseVersion(ONECCS);
-        Version VTWELVECE = genericVersionScheme.parseVersion(TWELVECE);
-        Test.addVersion(VTWELVECE);
-        Test.addVersion(VONECCS);
-        Version result = resolve.fetchHighestKafkaVersionPublic(CCS, Test , constrainText);
-        assertEquals(VONECCS, result);
+        Version VONE_CCS = genericVersionScheme.parseVersion(ONE_CCS);
+        Version VTWELVE_CE = genericVersionScheme.parseVersion(TWELVE_CE);
+        Test.addVersion(VTWELVE_CE);
+        Test.addVersion(VONE_CCS);
+        Version result = resolve.fetchHighestKafkaVersion(CCS, Test , constrainText);
+        assertEquals(VONE_CCS, result);
     }
 }

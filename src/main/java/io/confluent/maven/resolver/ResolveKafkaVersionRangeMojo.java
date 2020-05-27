@@ -168,7 +168,8 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 		}
 	}
 
-	private Version fetchHighestKafkaVersion(String kafkaType, VersionRangeResult result, String constraintText)
+	//public for test
+	public Version fetchHighestKafkaVersion(String kafkaType, VersionRangeResult result, String constraintText)
 			throws MojoExecutionException, MojoFailureException {
 
 		// Workaround for https://issues.apache.org/jira/browse/MNG-3092
@@ -203,11 +204,6 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 		} catch (MojoFailureException e) {
 			throw new MojoExecutionException("", e);
 		}
-	}
-
-	public Version fetchHighestKafkaVersionPublic(String kafkaType, VersionRangeResult result, String constraintText)
-			throws MojoExecutionException, MojoFailureException {
-		return fetchHighestKafkaVersion(kafkaType, result, constraintText);
 	}
 
 	private List<Version> removeSnapshots(List<Version> versions) {
@@ -252,6 +248,6 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 	}
 
 	private static boolean isCE(String version) {
-		return version.endsWith(Strings.CCS_QUALIFIER.toString());
+		return version.endsWith(Strings.CE_QUALIFIER.toString());
 	}
 }

@@ -78,18 +78,69 @@
 
     <build>
         <plugins>
-            <!-- Staging for release to Maven Central. -->
             <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.5</version>
-                <extensions>true</extensions>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>mrm-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <executions>
+                <execution>
+                    <goals>
+                    <goal>start</goal>
+                    <goal>stop</goal>
+                    </goals>
+                </execution>
+                </executions>
                 <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                <propertyName>repository.proxy.url</propertyName>
+                <repositories>
+                    <mockRepo>
+                    <source>src/it-repo</source>
+                    </mockRepo>
+                    <proxyRepo />
+                </repositories>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-invoker-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <projectsDirectory>src/it</projectsDirectory>
+                    <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+                    <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+                    <settingsFile>src/it/settings.xml</settingsFile>
+                    <showErrors>true</showErrors>
+                    <streamLogs>true</streamLogs>
+                    <!--
+                        ! There seemed to be a problem with the indepance of the IT's
+                        ! here. So we can't use more than one thread.
+                        ! TODO: Dive more deeply into this problem.
+                    -->
+                    <parallelThreads>1</parallelThreads>
+                    <pomIncludes>
+                        <pomInclude>*/pom.xml</pomInclude>
+                    </pomIncludes>
+                    <postBuildHookScript>verify</postBuildHookScript>
+                    <filterProperties>
+                        <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
+                    </filterProperties>
+                    <mavenOpts>-Xmx256m</mavenOpts>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                        <goal>install</goal>
+                        <goal>run</goal>
+                        </goals>
+                        <configuration>
+                        <streamLogs>false</streamLogs>
+                        <debug>true</debug>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Staging for release to Maven Central. -->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -194,6 +245,11 @@
                     <artifactId>maven-deploy-plugin</artifactId>
                     <version>2.8.2</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.2</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -212,6 +268,17 @@
                     <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
                     <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-invoker-plugin</artifactId>
+                <reportSets>
+                <reportSet>
+                    <reports>
+                    <report>report</report>
+                    </reports>
+                </reportSet>
+                </reportSets>
             </plugin>
         </plugins>
     </reporting>
