@@ -191,7 +191,7 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 			}
 
 			getLog().debug(kafkaType + " Constraint: " + result.getVersionConstraint());
-			getLog().info(kafkaType + " Versions in range: " + result.getVersions());
+			getLog().debug(kafkaType + " Versions in range: " + result.getVersions());
 
 			Version highestVersion = result.getHighestVersion();
 
