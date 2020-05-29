@@ -1,0 +1,51 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>localhost</groupId>
+  <artifactId>it-lex-order-test-001</artifactId>
+  <version>1.0</version>
+  <packaging>pom</packaging>
+  <name>Update a dependency to the latest version</name>
+  <description>
+    This is a simple IT test to test that maven ce ccs kafka version compare do not
+    follow lexi order.
+  </description>
+
+  <dependencies>
+    <dependency>
+      <groupId>localhost</groupId>
+      <artifactId>kafka-clients</artifactId>
+      <version>${ce.kafka.version}</version>
+    </dependency>
+  </dependencies>
+
+    <properties>
+        <ce.kafka.version>[6.0.1-1-ce, 6.0.2-1-ce)</ce.kafka.version>
+        <kafka.version>[6.0.1-1-ccs, 6.0.2-1-ccs)</kafka.version>
+    </properties>
+    
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>@project.groupId@</groupId>
+        <artifactId>@project.artifactId@</artifactId>
+        <version>@project.version@</version>
+        <configuration>
+            <groupId>localhost</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <versionRange>[6.0.1-1, 6.0.2-1)</versionRange>
+        </configuration>
+        <executions>
+            <execution>
+            <phase>validate</phase>
+                <goals>
+                    <goal>resolve-kafka-range</goal>
+                </goals>
+            </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

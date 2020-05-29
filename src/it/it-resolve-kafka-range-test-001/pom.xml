@@ -34,7 +34,8 @@
         <configuration>
             <groupId>localhost</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>[6.0.1-1, 6.0.2-1)</version>
+            <versionRange>[6.0.1-1, 6.0.2-1)</versionRange>
+            <skip>true</skip>
         </configuration>
         <executions>
             <execution>

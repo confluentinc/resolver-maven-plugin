@@ -88,7 +88,7 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 	 * The version range of the artifact to resolve.
 	 */
 	@Parameter(property = "versionRange", required = true)
-	private String version;
+	private String versionRange;
 
 	/**
 	 * If <code>true</code>, the highest matching version is printed directly to the
@@ -105,6 +105,9 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 	 */
 	@Parameter(property = "includeSnapshots", defaultValue = "false")
 	private boolean includeSnapshots;
+
+	@Parameter(property = "resolver.skip", defaultValue = "false")
+	private boolean skip;
 
 	/**
 	 * The name of the property that will be set to the highest matching version.
@@ -126,45 +129,47 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		VersionRangeRequest request = new VersionRangeRequest();
-		request.setRepositories(remoteRepositories);
-		DefaultArtifact artifact = new DefaultArtifact(groupId, artifactId, null, version);
-		request.setArtifact(artifact);
+		if(!skip) {
+			VersionRangeRequest request = new VersionRangeRequest();
+			request.setRepositories(remoteRepositories);
+			DefaultArtifact artifact = new DefaultArtifact(groupId, artifactId, null, versionRange);
+			request.setArtifact(artifact);
 
-		String constraintText = artifact.toString() + ", " + (includeSnapshots ? "including" : "excluding")
-				+ " snapshots";
-		getLog().info("Resolving range for " + constraintText);
-		try {
-			VersionRangeResult CEResult = repoSystem.resolveVersionRange(repoSession, request);
-			VersionRangeResult CCSResult = repoSystem.resolveVersionRange(repoSession, request);
-			Version highestCEVersion = fetchHighestKafkaVersion(Strings.CE.toString(), CEResult, constraintText);
-			Version highestCCSVersion = fetchHighestKafkaVersion(Strings.CCS.toString(), CCSResult, constraintText);
+			String constraintText = artifact.toString() + ", " + (includeSnapshots ? "including" : "excluding")
+					+ " snapshots";
+			getLog().info("Resolving range for " + constraintText);
+			try {
+				VersionRangeResult CEResult = repoSystem.resolveVersionRange(repoSession, request);
+				VersionRangeResult CCSResult = repoSystem.resolveVersionRange(repoSession, request);
+				Version highestCEVersion = fetchHighestKafkaVersion(Strings.CE.toString(), CEResult, constraintText);
+				Version highestCCSVersion = fetchHighestKafkaVersion(Strings.CCS.toString(), CCSResult, constraintText);
 
-			getLog().info("Highest " + Strings.CE.toString() + " version: " + highestCEVersion);
-			getLog().info("Highest " + Strings.CCS.toString() + " version: " + highestCCSVersion);
+				getLog().info("Highest " + Strings.CE.toString() + " version: " + highestCEVersion);
+				getLog().info("Highest " + Strings.CCS.toString() + " version: " + highestCCSVersion);
 
-			if (printCE) {
-				System.out.println(highestCEVersion);
+				if (printCE) {
+					System.out.println(highestCEVersion);
+				}
+
+				if (printCCS) {
+					System.out.println(highestCCSVersion);
+				}
+
+				// Set CE property.
+				if (project != null) {
+					getLog().info("Setting " + CE_KAFKA_VERSION + " property " + CE_KAFKA_VERSION + "=" + highestCEVersion);
+					project.getProperties().put(CE_KAFKA_VERSION, highestCEVersion.toString());
+				}
+
+				// Set CCS property.
+				if (project != null) {
+					getLog().info(
+							"Setting " + CCS_KAFKA_VERSION + " property " + CCS_KAFKA_VERSION + "=" + highestCCSVersion);
+					project.getProperties().put(CCS_KAFKA_VERSION, highestCCSVersion.toString());
+				}
+			} catch (VersionRangeResolutionException e) {
+				throw new MojoExecutionException("", e);
 			}
-
-			if (printCCS) {
-				System.out.println(highestCCSVersion);
-			}
-
-			// Set CE property.
-			if (project != null) {
-				getLog().info("Setting " + CE_KAFKA_VERSION + " property " + CE_KAFKA_VERSION + "=" + highestCEVersion);
-				project.getProperties().put(CE_KAFKA_VERSION, highestCEVersion.toString());
-			}
-
-			// Set CCS property.
-			if (project != null) {
-				getLog().info(
-						"Setting " + CCS_KAFKA_VERSION + " property " + CCS_KAFKA_VERSION + "=" + highestCCSVersion);
-				project.getProperties().put(CCS_KAFKA_VERSION, highestCCSVersion.toString());
-			}
-		} catch (VersionRangeResolutionException e) {
-			throw new MojoExecutionException("", e);
 		}
 	}
 
