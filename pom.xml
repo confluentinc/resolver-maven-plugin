@@ -4,7 +4,7 @@
 
     <groupId>io.confluent</groupId>
     <artifactId>resolver-maven-plugin</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <packaging>maven-plugin</packaging>
     <name>Resolver Maven Plugin</name>
 
@@ -29,11 +29,22 @@
         <github.global.server>github</github.global.server>
     </properties>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
     <scm>
         <url>http://github.com/confluentinc/resolver-maven-plugin</url>
         <connection>scm:git:git://github.com/confluentinc/resolver-maven-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/confluentinc/resolver-maven-plugin.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>0.1.0</tag>
     </scm>
 
     <dependencies>
@@ -234,6 +245,9 @@
                     <artifactId>maven-release-plugin</artifactId>
                     <version>2.5.2</version>
                     <configuration>
+                        <checkModificationExcludes>
+                            <checkModificationExclude>pom.xml</checkModificationExclude>
+                        </checkModificationExcludes>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
                         <useReleaseProfile>false</useReleaseProfile>
                         <releaseProfiles>release</releaseProfiles>
