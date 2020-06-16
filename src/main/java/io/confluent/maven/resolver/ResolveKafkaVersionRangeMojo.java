@@ -1,8 +1,15 @@
 package io.confluent.maven.resolver;
 
+import java.io.IOException;
+import java.io.File;
+import java.io.Writer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -12,6 +19,11 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.mojo.versions.api.PomHelper;
+import org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.WriterFactory;
+import org.codehaus.stax2.XMLInputFactory2;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -110,6 +122,12 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 	private boolean skip;
 
 	/**
+	 * The name of the new pom file to create.
+	 */
+	@Parameter(property = "resolver.new.pom.file", defaultValue = "installed_pom.xml")
+	private String newPomFile;
+
+	/**
 	 * The name of the property that will be set to the highest matching version.
 	 */
 	@Parameter
@@ -167,6 +185,8 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 							"Setting " + CCS_KAFKA_VERSION + " property " + CCS_KAFKA_VERSION + "=" + highestCCSVersion);
 					project.getProperties().put(CCS_KAFKA_VERSION, highestCCSVersion.toString());
 				}
+
+				createInstallPom(highestCEVersion.toString(), highestCCSVersion.toString());
 			} catch (VersionRangeResolutionException e) {
 				throw new MojoExecutionException("", e);
 			}
@@ -240,6 +260,100 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 		}
 		return result;
 	}
+
+  /**
+   * Loads the current pom file, sets the values for the kafka properties
+   * to the newest versions, and then writes out that pom file.
+   *
+   * @param ceVersion The version of CE Kafka
+   * @param ccsVersion The version of CCS Kafka
+   * @throws MojoExecutionException If there is a failure creating the pom file or setting the properties
+   */
+  public void createInstallPom(String ceVersion, String ccsVersion) throws MojoExecutionException
+  {
+    try {
+      getLog().info("Creating installed pom file");
+      // Get the name of the current projects pom file
+      File pomFile = project.getFile();
+      // Create the path for the new pom file we are going to create.
+      Path installedPomPath = Paths.get(pomFile.getParent(), newPomFile);
+      File installedPomFile = new File(installedPomPath.toString());
+      // Parse the current projects pom file.
+      StringBuilder input = PomHelper.readXmlFile(pomFile);
+      ModifiedPomXMLEventReader newPom = newModifiedPomXER(input);
+
+      if (!PomHelper.setPropertyVersion(newPom, null, "ce.kafka.version", ceVersion)) {
+        throw new MojoExecutionException("Failed to set ce.kafka.version property.");
+      }
+
+      if (!PomHelper.setPropertyVersion(newPom, null, "kafka.version", ccsVersion)) {
+        throw new MojoExecutionException("Failed to set kafka.version property.");
+      }
+
+      writeFile(installedPomFile, input);
+    }
+    catch (IOException e)
+    {
+      getLog().error(e);
+      throw new MojoExecutionException("Failed to write installed pom file.", e);
+    }
+    catch (XMLStreamException e)
+    {
+      getLog().error(e);
+      throw new MojoExecutionException("Failed to write installed pom file.", e);
+    }
+  }
+
+  /**
+   * This code was taken from the versions maven plugin .
+   * https://github.com/mojohaus/versions-maven-plugin/blob/versions-maven-plugin-2.7/src/main/java/org/codehaus/mojo/versions/AbstractVersionsUpdaterMojo.java
+   */
+  /**
+   * Creates a {@link org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader} from a StringBuilder.
+   *
+   * @param input The XML to read and modify.
+   * @return The {@link org.codehaus.mojo.versions.rewriting.ModifiedPomXMLEventReader}.
+   */
+  protected final ModifiedPomXMLEventReader newModifiedPomXER(StringBuilder input)
+  {
+    ModifiedPomXMLEventReader newPom = null;
+    try
+    {
+      XMLInputFactory inputFactory = XMLInputFactory2.newInstance();
+      inputFactory.setProperty(XMLInputFactory2.P_PRESERVE_LOCATION, Boolean.TRUE);
+      newPom = new ModifiedPomXMLEventReader(input, inputFactory);
+    }
+    catch (XMLStreamException e)
+    {
+      getLog().error(e);
+    }
+    return newPom;
+  }
+
+  /**
+   * This code was taken from the versions maven plugin .
+   * https://github.com/mojohaus/versions-maven-plugin/blob/versions-maven-plugin-2.7/src/main/java/org/codehaus/mojo/versions/AbstractVersionsUpdaterMojo.java
+   */
+  /**
+   * Writes a StringBuilder into a file.
+   *
+   * @param outFile The file to read.
+   * @param input The contents of the file.
+   * @throws IOException when things go wrong.
+   */
+  protected final void writeFile(File outFile, StringBuilder input)
+      throws IOException
+  {
+    Writer writer = WriterFactory.newXmlWriter(outFile);
+    try
+    {
+      IOUtil.copy(input.toString(), writer);
+    }
+    finally
+    {
+      IOUtil.close(writer);
+    }
+  }
 
 	/**
 	 * Copied from org.eclipse.aether.artifact.AbstractArtifact.isSnapshot(String).
