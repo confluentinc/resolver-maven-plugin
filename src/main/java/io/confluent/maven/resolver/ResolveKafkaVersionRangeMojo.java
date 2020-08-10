@@ -124,7 +124,7 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 	/**
 	 * The name of the new pom file to create.
 	 */
-	@Parameter(property = "resolver.new.pom.file", defaultValue = "installed_pom.xml")
+	@Parameter(property = "resolver.new.pom.file")
 	private String newPomFile;
 
 	/**
@@ -186,7 +186,9 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 					project.getProperties().put(CCS_KAFKA_VERSION, highestCCSVersion.toString());
 				}
 
-				createInstallPom(highestCEVersion.toString(), highestCCSVersion.toString());
+        if (newPomFile != null) {
+				  createInstalledPom(highestCEVersion.toString(), highestCCSVersion.toString());
+        }
 			} catch (VersionRangeResolutionException e) {
 				throw new MojoExecutionException("", e);
 			}
@@ -269,7 +271,7 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
    * @param ccsVersion The version of CCS Kafka
    * @throws MojoExecutionException If there is a failure creating the pom file or setting the properties
    */
-  public void createInstallPom(String ceVersion, String ccsVersion) throws MojoExecutionException
+  public void createInstalledPom(String ceVersion, String ccsVersion) throws MojoExecutionException
   {
     try {
       getLog().info("Creating installed pom file");
