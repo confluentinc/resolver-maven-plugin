@@ -124,7 +124,7 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 	/**
 	 * The name of the new pom file to create.
 	 */
-	@Parameter(property = "resolver.new.pom.file")
+	@Parameter(property = "resolver.newPomFile")
 	private String newPomFile;
 
 	/**
