@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 
 common {
-    slackChannel = '#tools-oncall'
+    slackChannel = '#tools-notifications'
     downStreamValidate = false
     runMergeCheck = false
 }
