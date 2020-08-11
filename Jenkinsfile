@@ -3,4 +3,5 @@
 common {
     slackChannel = '#tools-oncall'
     downStreamValidate = false
+    runMergeCheck = false
 }
