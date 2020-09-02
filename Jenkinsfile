@@ -28,7 +28,7 @@ node('docker-oraclejdk8') {
                         returnStdout: true
                         ).trim()
 
-        if ( !params.RELEASE_TAG.trim().equals("v" + project_version.trim()) ){
+        if ( !params.RELEASE_TAG.trim().equals(project_version) ){
             echo 'ERROR: tag doesn\'t match project version, please correct and try again'
             echo "Tag: ${params.RELEASE_TAG}"
             echo "Project version: ${project_version}"
