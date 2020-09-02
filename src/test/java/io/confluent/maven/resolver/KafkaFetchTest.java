@@ -26,7 +26,7 @@ public class KafkaFetchTest {
         Version VTWELVE_CE = genericVersionScheme.parseVersion(TWELVE_CE);
         Test.addVersion(VTWELVE_CE);
         Test.addVersion(VONE_CCS);
-        Version result = resolve.fetchHighestKafkaVersion(CCS, Test , constrainText);
-        assertEquals(VONE_CCS, result);
+        String result = resolve.fetchHighestKafkaVersion(CCS, Test , constrainText, false);
+        assertEquals(ONE_CCS, result);
     }
 }
