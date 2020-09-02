@@ -420,11 +420,6 @@
         </profile>
         <profile>
             <id>maven-central</id>
-            <properties>
-            <tools.jar>${java.home}/../lib/tools.jar</tools.jar>
-            <m2_repo>${user.home}/.m2/repository</m2_repo>
-            <ntdll_target>build</ntdll_target>
-            </properties>
             <activation>
                 <property>
                     <name>performRelease</name>
