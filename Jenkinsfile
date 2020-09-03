@@ -39,9 +39,7 @@ node('docker-oraclejdk8') {
   }
   stage('Build') {
       archiveArtifacts artifacts: 'pom.xml'
-      withVaultEnv([["artifactory/tools_jenkins", "user", "TOOLS_ARTIFACTORY_USER"],
-          ["artifactory/tools_jenkins", "password", "TOOLS_ARTIFACTORY_PASSWORD"],
-          ["sonatype/confluent", "user", "SONATYPE_OSSRH_USER"],
+      withVaultEnv([["sonatype/confluent", "user", "SONATYPE_OSSRH_USER"],
           ["sonatype/confluent", "password", "SONATYPE_OSSRH_PASSWORD"],
           ["gpg/packaging", "passphrase", "GPG_PASSPHRASE"]]) {
           withVaultFile([["maven/jenkins_maven_global_settings", "settings_xml", "maven-global-settings.xml", "MAVEN_GLOBAL_SETTINGS_FILE"],
