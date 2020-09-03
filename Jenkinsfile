@@ -53,6 +53,7 @@ node('docker-oraclejdk8') {
                   } else {
                       // it's a parameterized job, and we should deploy to maven central.
                       sh '''
+                          set +x
                           gpg --import < $GPG_PRIVATE_KEY;
                           mvn --batch-mode clean deploy -P maven-central -Dgpg.passphrase=$GPG_PASSPHRASE
                       '''
