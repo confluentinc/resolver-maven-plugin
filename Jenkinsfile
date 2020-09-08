@@ -9,6 +9,7 @@ def RelaseTag = string(name: 'RELEASE_TAG', defaultValue: '',
 def config = jobConfig {
     owner = 'tools'
     slackChannel = 'tools-notifications'
+    nodeLabel = 'docker-oraclejdk8'
     usesDockerForTesting = false
     runMergeCheck = false
     testResultSpecs = ['junit': 'test/results.xml']
