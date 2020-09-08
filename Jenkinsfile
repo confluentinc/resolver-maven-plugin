@@ -2,24 +2,20 @@
 
 // Copyright 2020 Confluent Inc
 
-properties([
-        buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '30', numToKeepStr: '')),
-        parameters([
-            string(name: 'RELEASE_TAG', defaultValue: '')
-        ])
-])
+def RelaseTag = string(name: 'RELEASE_TAG', defaultValue: '',
+                                description: 'Provide the tag of plugin that will be release to maven central,' +
+                                'only use the value when you want to release to maven central')
 
-// We use the oldest available jdk version.
-node('docker-oraclejdk8') {
-  stage('Source') {
-    checkout([
-        $class: 'GitSCM',
-        branches: scm.branches,
-        doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-        extensions: [[$class: 'CloneOption', noTags: false, shallow: false, depth: 0, reference: '']],
-        userRemoteConfigs: scm.userRemoteConfigs,
-    ])
+def config = jobConfig {
+    owner = 'tools'
+    slackChannel = 'tools-notifications'
+    usesDockerForTesting = false
+    runMergeCheck = false
+    testResultSpecs = ['junit': 'test/results.xml']
+    properties = [parameters([RelaseTag])]
+}
 
+def job = {
     // If we have a RELEASE_TAG specified as a build parameter, test that the version in pom.xml matches the tag.
     if ( !params.RELEASE_TAG.trim().equals('') ) {
         sh "git checkout ${params.RELEASE_TAG}"
@@ -36,12 +32,10 @@ node('docker-oraclejdk8') {
             return
         }
     }
-  }
+
   stage('Build') {
       archiveArtifacts artifacts: 'pom.xml'
-      withVaultEnv([["sonatype/confluent", "user", "SONATYPE_OSSRH_USER"],
-          ["sonatype/confluent", "password", "SONATYPE_OSSRH_PASSWORD"],
-          ["gpg/packaging", "passphrase", "GPG_PASSPHRASE"]]) {
+      withVaultEnv([["gpg/packaging", "passphrase", "GPG_PASSPHRASE"]]) {
           withVaultFile([["maven/jenkins_maven_global_settings", "settings_xml", "maven-global-settings.xml", "MAVEN_GLOBAL_SETTINGS_FILE"],
               ["gpg/packaging", "private_key", "confluent-packaging-private.key", "GPG_PRIVATE_KEY"]]) {
               withMaven(globalMavenSettingsFilePath: "${env.MAVEN_GLOBAL_SETTINGS_FILE}") {
@@ -62,3 +56,4 @@ node('docker-oraclejdk8') {
       }
   }
 }
+runJob config, job
