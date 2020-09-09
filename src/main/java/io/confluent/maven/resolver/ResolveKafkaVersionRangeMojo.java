@@ -127,6 +127,18 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 	@Parameter(property = "resolver.newPomFile")
 	private String newPomFile;
 
+  /**
+  * Fail if we could not resolve a version of ccs kafka.
+  */
+  @Parameter(property = "failIfCCSNotfound", defaultValue = "true")
+  private boolean failIfCCSNotfound;
+
+  /**
+  * Fail if we could not resolve a version of ce kafka.
+  */
+  @Parameter(property = "failIfCENotfound", defaultValue = "true")
+  private boolean failIfCENotfound;
+
 	/**
 	 * The name of the property that will be set to the highest matching version.
 	 */
@@ -159,8 +171,8 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 			try {
 				VersionRangeResult CEResult = repoSystem.resolveVersionRange(repoSession, request);
 				VersionRangeResult CCSResult = repoSystem.resolveVersionRange(repoSession, request);
-				Version highestCEVersion = fetchHighestKafkaVersion(Strings.CE.toString(), CEResult, constraintText);
-				Version highestCCSVersion = fetchHighestKafkaVersion(Strings.CCS.toString(), CCSResult, constraintText);
+				String highestCEVersion = fetchHighestKafkaVersion(Strings.CE.toString(), CEResult, constraintText, failIfCENotfound);
+				String highestCCSVersion = fetchHighestKafkaVersion(Strings.CCS.toString(), CCSResult, constraintText, failIfCCSNotfound);
 
 				getLog().info("Highest " + Strings.CE.toString() + " version: " + highestCEVersion);
 				getLog().info("Highest " + Strings.CCS.toString() + " version: " + highestCCSVersion);
@@ -173,21 +185,19 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 					System.out.println(highestCCSVersion);
 				}
 
-				// Set CE property.
+				
 				if (project != null) {
+          // Set CE property.
 					getLog().info("Setting " + CE_KAFKA_VERSION + " property " + CE_KAFKA_VERSION + "=" + highestCEVersion);
-					project.getProperties().put(CE_KAFKA_VERSION, highestCEVersion.toString());
-				}
-
-				// Set CCS property.
-				if (project != null) {
+					project.getProperties().put(CE_KAFKA_VERSION, highestCEVersion);
+				  // Set CCS property.
 					getLog().info(
 							"Setting " + CCS_KAFKA_VERSION + " property " + CCS_KAFKA_VERSION + "=" + highestCCSVersion);
-					project.getProperties().put(CCS_KAFKA_VERSION, highestCCSVersion.toString());
+					project.getProperties().put(CCS_KAFKA_VERSION, highestCCSVersion);
 				}
 
         if (newPomFile != null) {
-				  createInstalledPom(highestCEVersion.toString(), highestCCSVersion.toString());
+				  createInstalledPom(highestCEVersion, highestCCSVersion);
         }
 			} catch (VersionRangeResolutionException e) {
 				throw new MojoExecutionException("", e);
@@ -196,7 +206,7 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 	}
 
 	//public for test
-	public Version fetchHighestKafkaVersion(String kafkaType, VersionRangeResult result, String constraintText)
+	public String fetchHighestKafkaVersion(String kafkaType, VersionRangeResult result, String constraintText, boolean failIfNotFound)
 			throws MojoExecutionException, MojoFailureException {
 
 		// Workaround for https://issues.apache.org/jira/browse/MNG-3092
@@ -207,15 +217,21 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 			}
 			if (kafkaType.equals(Strings.CE.toString())) {
 				result.setVersions(includeCE(result.getVersions()));
-				// if ce-kafka can not be fetched
-				if (result.getVersions().isEmpty()) {
-					getLog().info(Strings.CE.toString() + " can not be fetched");
-				}
 			} else if (kafkaType.equals(Strings.CCS.toString())) {
 				result.setVersions(includeCCS(result.getVersions()));
 			} else {
 				throw new MojoFailureException("kafka type " + kafkaType + "wrong or not supported");
 			}
+
+      // if ce/ccs artifacts can not be fetched
+      if (result.getVersions().isEmpty()) {
+        getLog().warn("Could not find any " + kafkaType + " artifacts.");
+        if (failIfNotFound) {
+          throw new MojoFailureException("Could not find any " + kafkaType + " artifacts.");
+        }
+        getLog().warn("Continuing with build because fail if not found for this version is set to false.");
+        return "No Versions Found";
+      }
 
 			getLog().debug(kafkaType + " Constraint: " + result.getVersionConstraint());
 			getLog().debug(kafkaType + " Versions in range: " + result.getVersions());
@@ -227,7 +243,7 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 						"No matching " + kafkaType + " version found for constraint: '" + constraintText + "'.");
 			}
 
-			return highestVersion;
+			return highestVersion.toString();
 		} catch (MojoFailureException e) {
 			throw new MojoExecutionException("", e);
 		}
