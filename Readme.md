@@ -38,6 +38,12 @@ This example writes the matching version number into the property `latestMavenMo
         </executions>
     </plugin>
 
+Manual release
+-------------------
+1. Use mvn release:prepare to cut new version tags
+2. Create branch based on version tag
+3. Use release parameter to release to maven central
+
 System requirements
 -------------------
 
