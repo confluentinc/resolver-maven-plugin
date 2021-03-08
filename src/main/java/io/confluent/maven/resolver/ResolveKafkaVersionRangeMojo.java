@@ -159,6 +159,10 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
+        if (!isVersionRange(versionRange)) {
+            skip = true;
+            getLog().info("Skip version range resolve since property is not a valid range");
+        }
 		if(!skip) {
 			VersionRangeRequest request = new VersionRangeRequest();
 			request.setRepositories(remoteRepositories);
@@ -386,5 +390,12 @@ public class ResolveKafkaVersionRangeMojo extends AbstractMojo {
 
 	private static boolean isCE(String version) {
 		return version.endsWith(Strings.CE_QUALIFIER.toString());
-	}
+    }
+    
+    private static boolean isVersionRange(String versionRange) {
+        boolean startValid = versionRange.startsWith("[") || versionRange.startsWith("(");
+        boolean endValid = versionRange.endsWith("]") || versionRange.endsWith(")");
+        return startValid && endValid;
+    }
+
 }
