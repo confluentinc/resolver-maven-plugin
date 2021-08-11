@@ -3,5 +3,6 @@
 common {
     slackChannel = '#tools-notifications'
     downStreamValidate = false
-    runMergeCheck = false
+    nodeLabel = 'docker-oraclejdk8'
+    cron = '' //disable cron builds
 }
