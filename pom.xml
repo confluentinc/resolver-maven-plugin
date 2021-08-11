@@ -12,6 +12,15 @@
         A Maven plugin for resolving a version range of an artifact to the highest matching version.
     </description>
 
+    <developers>
+        <developer>
+            <name>Confluent Developer Prod Team</name>
+            <email>tools@confluent.io</email>
+            <organization>Confluent, Inc.</organization>
+            <organizationUrl>https://confluent.io</organizationUrl>
+        </developer>
+    </developers>
+
     <url>https://github.com/confluentinc/resolver-maven-plugin</url>
 
     <licenses>

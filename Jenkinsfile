@@ -14,12 +14,12 @@ def config = jobConfig {
     runMergeCheck = false
     testResultSpecs = ['junit': 'test/results.xml']
     properties = [parameters([RelaseTag])]
+    cron = '' //disable cron builds
 }
 
 def job = {
     // If we have a RELEASE_TAG specified as a build parameter, test that the version in pom.xml matches the tag.
     if ( !params.RELEASE_TAG.trim().equals('') ) {
-        sh "git checkout ${params.RELEASE_TAG}"
         def project_version = sh (
                         script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout | tail -1',
                         returnStdout: true
