@@ -14,6 +14,7 @@ def config = jobConfig {
     runMergeCheck = false
     testResultSpecs = ['junit': 'test/results.xml']
     properties = [parameters([RelaseTag])]
+    cron = '' //disable cron builds
 }
 
 def job = {
