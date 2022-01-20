@@ -36,22 +36,24 @@ def job = {
 
   stage('Build') {
       archiveArtifacts artifacts: 'pom.xml'
+      def mavenSettingsFile = "${env.WORKSPACE_TMP}/maven-global-settings.xml"
       withVaultEnv([["gpg/packaging", "passphrase", "GPG_PASSPHRASE"]]) {
-          withVaultFile([["maven/jenkins_maven_global_settings", "settings_xml", "maven-global-settings.xml", "MAVEN_GLOBAL_SETTINGS_FILE"],
-              ["gpg/packaging", "private_key", "confluent-packaging-private.key", "GPG_PRIVATE_KEY"]]) {
-              withMaven(globalMavenSettingsFilePath: "${env.MAVEN_GLOBAL_SETTINGS_FILE}") {
+          withVaultFile([["gpg/packaging", "private_key", "confluent-packaging-private.key", "GPG_PRIVATE_KEY"]]) {
+              withMavenSettings("maven/jenkins_maven_global_settings", "settings", "MAVEN_GLOBAL_SETTINGS", mavenSettingsFile) {
+                  withMaven(globalMavenSettingsFilePath: mavenSettingsFile) {
 
-                  if ( params.RELEASE_TAG.trim().equals('') ) {
-                      sh "mvn --batch-mode -Pjenkins clean verify install dependency:analyze site validate -U"
-                  } else {
-                      // it's a parameterized job, and we should deploy to maven central.
-                      sh '''
-                          set +x
-                          gpg --import < $GPG_PRIVATE_KEY;
-                          mvn --batch-mode clean deploy -P maven-central -Dgpg.passphrase=$GPG_PASSPHRASE
-                      '''
+                      if ( params.RELEASE_TAG.trim().equals('') ) {
+                          sh "mvn --batch-mode -Pjenkins clean verify install dependency:analyze site validate -U"
+                      } else {
+                          // it's a parameterized job, and we should deploy to maven central.
+                          sh '''
+                              set +x
+                              gpg --import < $GPG_PRIVATE_KEY;
+                              mvn --batch-mode clean deploy -P maven-central -Dgpg.passphrase=$GPG_PASSPHRASE
+                          '''
+                      }
+                      currentBuild.result = 'Success'
                   }
-                  currentBuild.result = 'Success'
               }
           }
       }
