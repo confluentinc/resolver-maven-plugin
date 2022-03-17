@@ -8,7 +8,7 @@ def RelaseTag = string(name: 'RELEASE_TAG', defaultValue: '',
 
 def config = jobConfig {
     owner = 'tools'
-    slackChannel = 'tools-notifications'
+    slackChannel = 'devprod-notifications'
     nodeLabel = 'docker-debian-jdk8'
     usesDockerForTesting = false
     runMergeCheck = false
