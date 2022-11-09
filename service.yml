@@ -1,0 +1,5 @@
+name: resolver-maven-plugin
+lang: unknown
+lang_version: unknown
+git:
+  enable: true
