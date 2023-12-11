@@ -30,8 +30,8 @@ blocks:
             - gpg --import < $GPG_PRIVATE_KEY;
             - mvn --batch-mode clean deploy -P maven-central -Dgpg.passphrase=$GPG_PASSPHRASE
 
-    epilogue:
-      always:
-        commands:
-          - . publish-test-results
-          - artifact push workflow target/test-results
+      epilogue:
+        always:
+          commands:
+            - . publish-test-results
+            - artifact push workflow target/test-results
