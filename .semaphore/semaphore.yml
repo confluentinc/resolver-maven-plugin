@@ -30,11 +30,11 @@ blocks:
             - mvn --batch-mode -Pjenkins clean verify install dependency:analyze site validate -U
             - . cache-maven store
 
-epilogue:
-  always:
-    commands:
-      - . publish-test-results
-      - artifact push workflow target/test-results
+    epilogue:
+      always:
+        commands:
+          - . publish-test-results
+          - artifact push workflow target/test-results
 
 after_pipeline:
   task:
