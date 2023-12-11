@@ -6,3 +6,12 @@ git:
 semaphore:
   enable: true
   pipeline_enable: false
+  tasks:
+    - name: release-to-public
+      branch: master
+      pipeline_file: .semaphore/release.yml
+      parameters:
+        - name: TAG
+          required: true
+          default_value: master
+          description: "The tag to release"
