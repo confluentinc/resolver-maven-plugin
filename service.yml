@@ -1,5 +1,8 @@
 name: resolver-maven-plugin
-lang: unknown
+lang: java
 lang_version: unknown
 git:
   enable: true
+semaphore:
+  enable: true
+  pipeline_enable: false
