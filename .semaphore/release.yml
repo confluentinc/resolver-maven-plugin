@@ -1,0 +1,37 @@
+version: v1.0
+name: build-test-release
+agent:
+  machine:
+    type: s1-prod-ubuntu20-04-arm64-1
+
+fail_fast:
+  cancel:
+    when: "true"
+
+execution_time_limit:
+  hours: 1
+
+global_job_config:
+  prologue:
+    commands:
+      - checkout
+      - . vault-setup
+
+blocks:
+  - name: Test
+    task:
+      jobs:
+        - name: Test
+          commands:
+            - git fetch --tags
+            - git checkout $TAG
+            - GPG_PASSPHRASE=$(vault kv get -field=passphrase v1/ci/kv/gpg/packaging)
+            - GPG_PRIVATE_KEY=$(vault kv get -field=private_key v1/ci/kv/gpg/packaging)
+            - gpg --import < $GPG_PRIVATE_KEY;
+            - mvn --batch-mode clean deploy -P maven-central -Dgpg.passphrase=$GPG_PASSPHRASE
+
+      epilogue:
+        always:
+          commands:
+            - . publish-test-results
+            - artifact push workflow target/test-results
