@@ -24,10 +24,10 @@ spec:
         level: pipeline
     whitelist:
       branches:
-      - master
-      - main
-      - /^v\d+\.\d+\.x$/
-      - /^gh-readonly-queue.*/
+      - 'master'
+      - 'main'
+      - '/^v\d+\.\d+\.x$/'
+      - '/^gh-readonly-queue.*/'
   custom_permissions: true
   debug_permissions:
   - empty
@@ -45,10 +45,10 @@ spec:
   tasks:
   - name: release-to-public
     scheduled: False
-    branch: master
+    branch: "master"
     pipeline_file: .semaphore/release.yml
     parameters:
     - name: TAG
       required: True
-      default_value: master
+      default_value: "master"
       description: "The tag to release"
