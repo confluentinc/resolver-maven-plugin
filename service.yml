@@ -16,3 +16,8 @@ semaphore:
           required: true
           default_value: master
           description: "The tag to release"
+  managed_sections:
+    - version
+    - name
+    - agent
+    - global_job_config
