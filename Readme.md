@@ -38,11 +38,11 @@ This example writes the matching version number into the property `latestMavenMo
         </executions>
     </plugin>
 
-Manual release
+Releases
 -------------------
-1. Use mvn release:prepare to cut new version tags
-2. Create branch based on version tag
-3. Use release parameter to release to maven central
+There is no release pipeline. The OSSRH publishing configuration in `pom.xml` no longer works, since
+Sonatype retired OSSRH; releasing again would need publishing moved to the Central Portal. Published
+versions remain on Maven Central as `io.confluent:resolver-maven-plugin`.
 
 System requirements
 -------------------
